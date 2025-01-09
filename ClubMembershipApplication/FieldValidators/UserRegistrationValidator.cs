@@ -1,32 +1,32 @@
-﻿using FieldValidatorAPI;
+﻿using ClubMembershipApplication.Data;
+using FieldValidatorAPI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ClubMembershipApplication.FieldValidators
 {
-    public class UserRegistrationValidator
+    public class UserRegistrationValidator : IFieldValidator
     {
         const int FirstName_Min_Length = 2;
         const int FirstName_Max_Length = 100;
         const int LastName_Min_Length = 2;
         const int LastName_Max_Length = 100;
 
-        delegate bool EmailExistDel(string emailAddress);
+        delegate bool EmailExistsDel(string emailAddress);
 
         FieldValidatorDel _fieldValidatorDel = null;
 
         RequiredValidDel _requiredValidDel = null;
-        StringLengthValidDel _stringLengthValidDel = null;
+        StringLengthValidDel _stringLenthValidDel = null;
         DateValidDel _dateValidDel = null;
         PatternMatchValidDel _patternMatchValidDel = null;
         CompareFieldsValidDel _compareFieldsValidDel = null;
 
-        EmailExistDel _emailExistDel = null;
+        EmailExistsDel _emailExistsDel = null;
 
         string[] _fieldArray = null;
+        IRegister _register = null;
 
         public string[] FieldArray
         {
@@ -40,18 +40,19 @@ namespace ClubMembershipApplication.FieldValidators
 
         public FieldValidatorDel ValidatorDel => _fieldValidatorDel;
 
-        public UserRegistrationValidator()
+        public UserRegistrationValidator(IRegister register)
         {
-
+            _register = register;
         }
 
 
-        public void InitaliseValidatorDelegates()
+        public void InitialiseValidatorDelegates()
         {
             _fieldValidatorDel = new FieldValidatorDel(ValidField);
+            _emailExistsDel = new EmailExistsDel(_register.EmailExists);
 
             _requiredValidDel = CommonFieldValidatorFunctions.RequiredFieldValidDel;
-            _stringLengthValidDel = CommonFieldValidatorFunctions.StringLengthFieldValidDel;
+            _stringLenthValidDel = CommonFieldValidatorFunctions.StringLengthFieldValidDel;
             _dateValidDel = CommonFieldValidatorFunctions.DateFieldValidDel;
             _patternMatchValidDel = CommonFieldValidatorFunctions.PatternMatchValidDel;
             _compareFieldsValidDel = CommonFieldValidatorFunctions.FieldsCompareValidDel;
@@ -67,17 +68,17 @@ namespace ClubMembershipApplication.FieldValidators
             switch (userRegistrationField)
             {
                 case FieldConstants.UserRegistrationField.EmailAddress:
-                    fieldInvalidMessage = (!_requiredValidDel(fieldValue)) ? "You must enter a value for field:{Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)}{Enviroment.NewLine}" : fieldInvalidMessage;
+                    fieldInvalidMessage = (!_requiredValidDel(fieldValue)) ? $"You must enter a value for field:{Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)}{Environment.NewLine}" : "";
                     fieldInvalidMessage = (fieldInvalidMessage == "" && !_patternMatchValidDel(fieldValue, CommonRegularExpressionValidationPatterns.Email_Address_RegEx_Pattern)) ? $"You must enter a valid email address{Environment.NewLine}" : fieldInvalidMessage;
-                    fieldInvalidMessage = (fieldInvalidMessage == "" && _emailExistDel(fieldValue)) ? $"This email address already exist. Please try a differnt email.{Environment.NewLine}" : fieldInvalidMessage;
+                    fieldInvalidMessage = (fieldInvalidMessage == "" && _emailExistsDel(fieldValue)) ? $"This email address already exists. Please try again{Environment.NewLine}" : fieldInvalidMessage;
                     break;
                 case FieldConstants.UserRegistrationField.FirstName:
                     fieldInvalidMessage = (!_requiredValidDel(fieldValue)) ? $"You must enter a value for field:{Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)}{Environment.NewLine}" : "";
-                    fieldInvalidMessage = (fieldInvalidMessage == "" && !_stringLengthValidDel(fieldValue, FirstName_Min_Length, FirstName_Max_Length)) ? $"The length for field: {Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)} must be between {FirstName_Min_Length} and {FirstName_Max_Length}{Environment.NewLine}" : fieldInvalidMessage;
+                    fieldInvalidMessage = (fieldInvalidMessage == "" && !_stringLenthValidDel(fieldValue, FirstName_Min_Length, FirstName_Max_Length)) ? $"The length for field: {Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)} must be between {FirstName_Min_Length} and {FirstName_Max_Length}{Environment.NewLine}" : fieldInvalidMessage;
                     break;
                 case FieldConstants.UserRegistrationField.LastName:
                     fieldInvalidMessage = (!_requiredValidDel(fieldValue)) ? $"You must enter a value for field:{Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)}{Environment.NewLine}" : "";
-                    fieldInvalidMessage = (fieldInvalidMessage == "" && !_stringLengthValidDel(fieldValue, LastName_Min_Length, LastName_Max_Length)) ? $"The length for field: {Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)} must be between {LastName_Min_Length} and {LastName_Max_Length}{Environment.NewLine}" : fieldInvalidMessage;
+                    fieldInvalidMessage = (fieldInvalidMessage == "" && !_stringLenthValidDel(fieldValue, LastName_Min_Length, LastName_Max_Length)) ? $"The length for field: {Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)} must be between {LastName_Min_Length} and {LastName_Max_Length}{Environment.NewLine}" : fieldInvalidMessage;
                     break;
                 case FieldConstants.UserRegistrationField.Password:
                     fieldInvalidMessage = (!_requiredValidDel(fieldValue)) ? $"You must enter a value for field:{Enum.GetName(typeof(FieldConstants.UserRegistrationField), userRegistrationField)}{Environment.NewLine}" : "";
@@ -109,7 +110,7 @@ namespace ClubMembershipApplication.FieldValidators
                     fieldInvalidMessage = (fieldInvalidMessage == "" && !_patternMatchValidDel(fieldValue, CommonRegularExpressionValidationPatterns.Uk_Post_Code_RegEx_Pattern)) ? $"You did not enter a valid UK post code{Environment.NewLine}" : fieldInvalidMessage;
                     break ;
                 default:
-                    throw new ArgumentException("This field does not exist";
+                    throw new ArgumentException("This field does not exists");
             }
 
             return (fieldInvalidMessage == "");

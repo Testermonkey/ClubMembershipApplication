@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ClubMembershipApplication.FieldValidators
 {
@@ -10,7 +8,7 @@ namespace ClubMembershipApplication.FieldValidators
 
     public interface IFieldValidator
     {
-        void InitalizeValidatorDelegates();
+        void InitialiseValidatorDelegates();
         string[] FieldArray { get; }
         FieldValidatorDel ValidatorDel { get; }
     }
