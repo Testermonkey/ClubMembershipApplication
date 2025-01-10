@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace FieldValidatorAPI
 {
+    //Delegate Method Definitions
     public delegate bool RequiredValidDel(string fieldVal);
     public delegate bool StringLengthValidDel(string fieldVal, int min, int max);
     public delegate bool DateValidDel(string fieldVal, out DateTime validDateTime);
@@ -13,12 +14,16 @@ namespace FieldValidatorAPI
 
     public class CommonFieldValidatorFunctions
     {
+        //Member Variables
         private static RequiredValidDel _requiredValidDel = null;
         private static StringLengthValidDel _stringLengthValidDel = null;
         private static DateValidDel _dateValidDel = null;
         private static PatternMatchValidDel _patternMatchValidDel = null;
         private static CompareFieldsValidDel _compareFieldsValidDel = null;
 
+        //Expose Delegates to calling code
+        //Using Singleton to ensure only one instance exist
+        //And pass in the approprate method from below Method Implemenations
         public static RequiredValidDel RequiredFieldValidDel
         {
             get
@@ -73,6 +78,8 @@ namespace FieldValidatorAPI
                 return _compareFieldsValidDel;
             }
         }
+
+        //Method Implemenations
         private static bool RequiredFieldValid(string fieldVal)
         {
             if (!string.IsNullOrEmpty(fieldVal))
